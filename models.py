@@ -1,8 +1,10 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Date
 from sqlalchemy.dialects.postgresql import ARRAY
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, constr
 from database import Base
 from typing import List
+import datetime
+import re
 
 
 #SQLAlchemy model for database representation
@@ -11,7 +13,7 @@ class Warrior(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
-    dob = Column(String)
+    dob = Column(Date)
     fight_skills = Column(ARRAY(String))
 
 # Pydantic model representing the basic structure of a warrior
@@ -32,6 +34,19 @@ class WarriorBase(BaseModel):
             if len(skill) > 250:
                 raise ValueError('Max char len is 250')
         return v
+    
+    @validator('dob')
+    def check_date_format(cls, v):
+        if not re.match(r'\d{4}-\d{2}-\d{2}', str(v)):
+            raise ValueError('Invalid date format; YYYY-DD-MM')
+        try:
+            year, day, month = map(int, str(v).split('-')) # Extract yr, day, month
+            datetime.date(year, month, day) # Create  a date object to validate date
+            # datetime.datetime.strptime(str(v), '%Y-%d-%m').date()
+        except ValueError as e:
+            raise ValueError('Invalid date format; YYYY-DD-MM')
+        return v
+
 
 
 
