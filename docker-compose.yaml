@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: uvicorn main:app --reload --port 8000 --host 0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "8080:8000"
+      #Maps host system's 8080 port to container's 8000 port
+    volumes: 
+      - .:/app
+      # Sync our host with docker for hot reloading
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: local
+      POSTGRES_DB: EngLab3
+    ports:
+      - "5432:5432"
