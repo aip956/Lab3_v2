@@ -49,19 +49,7 @@ def search_warriors(
     for warrior in warriors:
         warrior.dob = warrior.dob.strftime('%Y-%d-%m') # Format date
     return warriors
-    # if t is None:
-    #     warriors = db.query(Warrior).all()
-    #     if not warriors:
-    #         
-    #     return warriors
-    # filtered_warriors = db.query(Warrior).filter(
-    #     func.lower(Warrior.name).contains(func.lower(t))
-    # ).all()
-    # if not filtered_warriors:
-    #     raise HTTPException(status_code=404, detail="No matching warriors found")
    
-    # return filtered_warriors
-
 
 # Endpoint to count registered warriors
 @app.get("/counting-warriors")
@@ -89,33 +77,13 @@ def create_warrior(warrior: WarriorCreate, db: Session = Depends(get_db)):
     print("Name:", warrior.name)
     print("DOB:", warrior.dob)
     print("Fight skills:", warrior.fight_skills)
-
-    # try:
-    #     year, month, day = map(int, warrior.dob.split('-'))
-    #     print("Postmonth: ", month)
-    #     print("PostDay: ", day)
-    #     # formatted_date = datetime_date(year, month, day)
-    #     formatted_date = datetime_date(year, month, day).strftime('%Y-%m-%d')
-    #     print("Post86formatted_date: ", formatted_date)
-
-    # except ValueError:
-    #     raise HTTPException(status_code=400, detail="84Invalid date")
     print("MainPost90")  
     db_warrior = Warrior(**warrior.dict())
-    # db_warrior = Warrior(
-    #     name=warrior.name,
-    #     dob=str(formatted_date),
-    #     fight_skills=warrior.fight_skills
-    # )
     print("MainPost96")  
     db.add(db_warrior)
     db.commit()
     db.refresh(db_warrior)
     print("MainPost100")  
-    # warrior.dob = db_warrior.dob.strftime('%Y-%d-%m') #Format date for response
-    # return db_warrior
-    # print("Main115Post,WarriorBase.from_orm(db_warrior): ", WarriorBase.from_orm(db_warrior))
-    # return WarriorBase.from_orm(db_warrior)
     return db_warrior
 
 # Use port 8080

@@ -6,6 +6,11 @@ Install dependencies:
 pip install fastapi sqlalchemy psycopg2-binary
 connection port to connect postgres to alchemy
 
+For v2:
+Change webserver from uvicorn to gunicorn
+Validate prior to saving
+
+
 To run API:
 Install uvicorn: pip install uvicorn 
 Run the API: uvicorn main:app --reload
