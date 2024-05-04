@@ -4,6 +4,9 @@ from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 from sqlalchemy import func
 from models import Base, Warrior, WarriorBase, WarriorCreate
+from typing import List
+from datetime import datetime
+from datetime import date as datetime_date
 
 
 app = FastAPI()
@@ -21,11 +24,14 @@ def get_db():
 
 # Endpoint to get warrior by ID
 @app.get("/warrior/{id}", response_model=WarriorBase)
-def get_warrior_by_id(id: int, db: Session = Depends(get_db)):
+async def get_warrior_by_id(id: int, db: Session = Depends(get_db)):
     warrior = db.query(Warrior).filter(Warrior.id == id).first()
     if warrior is None:
         raise HTTPException(status_code=404, detail="Warrior not found")
-    return warrior
+    warrior.dob = warrior.dob.strftime('%Y-%d-%m') # Format date to Y-D-M
+    # return warrior
+    return WarriorBase.from_orm(warrior)
+
 
 # Endpoint to search warriors by attributes
 @app.get("/warrior", response_model=List[WarriorBase])
@@ -33,17 +39,28 @@ def search_warriors(
     db: Session = Depends(get_db),
     t: Optional[str] = Query(None, description="Search term")
 ):
-    if t is None:
+    # query = db.query(Warrior)
+    if t:
+        warriors = db.query(Warrior).filter(func.lower(Warrior.name).contains(func.lower(t))).all()
+    else:
         warriors = db.query(Warrior).all()
-        if not warriors:
-            raise HTTPException(status_code=404, detail="No warriors found")
-        return warriors
-    filtered_warriors = db.query(Warrior).filter(
-        func.lower(Warrior.name).contains(func.lower(t))
-    ).all()
-    if not filtered_warriors:
-        raise HTTPException(status_code=404, detail="No matching warriors found")
-    return filtered_warriors
+    if not warriors:
+        raise HTTPException(status_code=404, detail="No warriors found")
+    for warrior in warriors:
+        warrior.dob = warrior.dob.strftime('%Y-%d-%m') # Format date
+    return warriors
+    # if t is None:
+    #     warriors = db.query(Warrior).all()
+    #     if not warriors:
+    #         
+    #     return warriors
+    # filtered_warriors = db.query(Warrior).filter(
+    #     func.lower(Warrior.name).contains(func.lower(t))
+    # ).all()
+    # if not filtered_warriors:
+    #     raise HTTPException(status_code=404, detail="No matching warriors found")
+   
+    # return filtered_warriors
 
 
 # Endpoint to count registered warriors
@@ -53,14 +70,53 @@ def count_warriors(db: Session = Depends(get_db)):
     return {"Count: ": count}
 
 # Endpiont to create a warrior
+def parse_date_from_string(date_str):
+    year, day, month = map(int, date_str.split('-'))
+    return datetime(year, month, day).date()
+
 @app.post("/warrior", response_model=WarriorBase)
 def create_warrior(warrior: WarriorCreate, db: Session = Depends(get_db)):
+    # Format date before saving to DB
+    print("In main Post80")
+    # Print received data
+    print("warrior: ", warrior)
+    print("Received data:", warrior.dict())
+
+    # Check type of 'warrior'
+    print("Type of 'warrior':", type(warrior))
+
+    # Check individual fields of 'warrior'
+    print("Name:", warrior.name)
+    print("DOB:", warrior.dob)
+    print("Fight skills:", warrior.fight_skills)
+
+    # try:
+    #     year, month, day = map(int, warrior.dob.split('-'))
+    #     print("Postmonth: ", month)
+    #     print("PostDay: ", day)
+    #     # formatted_date = datetime_date(year, month, day)
+    #     formatted_date = datetime_date(year, month, day).strftime('%Y-%m-%d')
+    #     print("Post86formatted_date: ", formatted_date)
+
+    # except ValueError:
+    #     raise HTTPException(status_code=400, detail="84Invalid date")
+    print("MainPost90")  
     db_warrior = Warrior(**warrior.dict())
+    # db_warrior = Warrior(
+    #     name=warrior.name,
+    #     dob=str(formatted_date),
+    #     fight_skills=warrior.fight_skills
+    # )
+    print("MainPost96")  
     db.add(db_warrior)
     db.commit()
     db.refresh(db_warrior)
+    print("MainPost100")  
+    # warrior.dob = db_warrior.dob.strftime('%Y-%d-%m') #Format date for response
+    # return db_warrior
+    # print("Main115Post,WarriorBase.from_orm(db_warrior): ", WarriorBase.from_orm(db_warrior))
+    # return WarriorBase.from_orm(db_warrior)
     return db_warrior
-
 
 # Use port 8080
 if __name__ == "__main__":
