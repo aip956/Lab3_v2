@@ -8,7 +8,17 @@ connection port to connect postgres to alchemy
 
 For v2:
 Change webserver from uvicorn to gunicorn
-Validate prior to saving
+Validate data prior to saving
+Add limits to resources
+Increased file descriptor limits
+Adjusted number of threads (docker-compose)
+configure pool-size (database.py)
+
+
+resources: 500 payload for warriors, generate payload scripts, reduce numbers
+check FastAPI docs on payload
+Timeout: log on docker; which routes are timing out
+reduce payload size
 
 
 To run API:
