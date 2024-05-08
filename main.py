@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi import FastAPI, HTTPException, Query, Depends, Response, status
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
@@ -23,7 +23,7 @@ def get_db():
         db.close()
 
 # Endpoint to get warrior by ID
-@app.get("/warrior/{id}", response_model=WarriorBase)
+@app.get("/warrior/{id}", response_model=WarriorBase, status_code=201)
 async def get_warrior_by_id(id: int, db: Session = Depends(get_db)):
     warrior = db.query(Warrior).filter(Warrior.id == id).first()
     if warrior is None:
@@ -34,7 +34,7 @@ async def get_warrior_by_id(id: int, db: Session = Depends(get_db)):
 
 
 # Endpoint to search warriors by attributes
-@app.get("/warrior", response_model=List[WarriorBase])
+@app.get("/warrior", response_model=List[WarriorBase], status_code=201)
 def search_warriors(
     db: Session = Depends(get_db),
     t: Optional[str] = Query(None, description="Search term")
@@ -52,7 +52,7 @@ def search_warriors(
    
 
 # Endpoint to count registered warriors
-@app.get("/counting-warriors")
+@app.get("/counting-warriors", status_code=201)
 def count_warriors(db: Session = Depends(get_db)):
     count = db.query(Warrior).count()
     return {"Count: ": count}
@@ -62,28 +62,28 @@ def parse_date_from_string(date_str):
     year, day, month = map(int, date_str.split('-'))
     return datetime(year, month, day).date()
 
-@app.post("/warrior", response_model=WarriorBase)
-def create_warrior(warrior: WarriorCreate, db: Session = Depends(get_db)):
+@app.post("/warrior", response_model=WarriorBase, status_code=status.HTTP_201_CREATED)
+def create_warrior(response: Response, warrior: WarriorCreate, db: Session = Depends(get_db)):
     # Format date before saving to DB
-    print("In main Post80")
+    # print("In main Post80")
     # Print received data
-    print("warrior: ", warrior)
-    print("Received data:", warrior.dict())
+    # print("warrior: ", warrior)
+    # print("Received data:", warrior.dict())
 
     # Check type of 'warrior'
-    print("Type of 'warrior':", type(warrior))
+    # print("Type of 'warrior':", type(warrior))
 
     # Check individual fields of 'warrior'
-    print("Name:", warrior.name)
-    print("DOB:", warrior.dob)
-    print("Fight skills:", warrior.fight_skills)
-    print("MainPost90")  
+    # print("Name:", warrior.name)
+    # print("DOB:", warrior.dob)
+    # print("Fight skills:", warrior.fight_skills)
+    # print("MainPost90")  
     db_warrior = Warrior(**warrior.dict())
-    print("MainPost96")  
+    # print("MainPost96")  
     db.add(db_warrior)
     db.commit()
     db.refresh(db_warrior)
-    print("MainPost100")  
+    # print("MainPost100")  
     return db_warrior
 
 # Use port 8080

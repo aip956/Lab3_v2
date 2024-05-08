@@ -12,7 +12,17 @@ Validate data prior to saving
 Add limits to resources
 Increased file descriptor limits
 Adjusted number of threads (docker-compose)
+91% KO to this point
+
+Increased gunicorn workers; 89% KO
+
+Corrected HTTP responses
 configure pool-size (database.py)
+
+To do:
+Determine cause of date time errors
+add more validating
+
 
 
 resources: 500 payload for warriors, generate payload scripts, reduce numbers

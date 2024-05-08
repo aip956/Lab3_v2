@@ -1,5 +1,7 @@
+from fastapi import HTTPException
 from sqlalchemy import Column, Integer, String, Date
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from uuid import uuid4
 from pydantic import BaseModel, Field, validator, constr, root_validator
 from database import Base
 from typing import List
@@ -12,7 +14,7 @@ import re
 class Warrior(Base):
     __tablename__ = "warriors"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
     name = Column(String, index=True)
     dob = Column(Date)
     fight_skills = Column(ARRAY(String))
@@ -31,9 +33,10 @@ class WarriorBase(BaseModel):
     def check_length(cls, v):
         if len(v) > 20:
             raise ValueError('Max skills is 20')
-        for skill in v:
-            if len(skill) > 250:
-                raise ValueError('Max char len is 250')
+        
+        combined_skills = ' '.join(v)
+        if len(combined_skills) > 250:
+            raise ValueError('Max char len is 250')
         return v
     
     
@@ -47,6 +50,6 @@ class WarriorCreate(WarriorBase): #Changed from BaseModel to WarriorBase
             print("136dob: ", datetime.strptime(value, "%Y-%m-%d").date() )
             return datetime.strptime(value, "%Y-%m-%d").date()
         except ValueError as e:
-            raise ValueError("dob must be in format YYYY-DD-MM") from e
+            raise HTTPException(status_code=400, detail = "dob must be in format YYYY-MM-DD") from e
     pass
 
