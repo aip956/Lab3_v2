@@ -18,10 +18,15 @@ Increased gunicorn workers; 89% KO
 
 Corrected HTTP responses
 configure pool-size (database.py)
+84% KO
+
+Added drop table if exists; corrected get date format: 85%KO
+
+Added validator for skill type and name must be chars and spaces
 
 To do:
-Determine cause of date time errors
-add more validating
+add middleware
+Query perf: table indexing differetnly
 
 
 

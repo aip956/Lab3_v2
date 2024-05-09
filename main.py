@@ -1,8 +1,8 @@
 from fastapi import FastAPI, HTTPException, Query, Depends, Response, status
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
-from sqlalchemy import func
+from database import SessionLocal, engine, Base
+from sqlalchemy import func, create_engine
 from models import Base, Warrior, WarriorBase, WarriorCreate
 from typing import List
 from datetime import datetime
@@ -11,8 +11,14 @@ from datetime import date as datetime_date
 
 app = FastAPI()
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+def prepare_database():
+    #drop table if exists
+    Warrior.__table__.drop(engine, checkfirst=True)
+    # Create database tables
+    Base.metadata.create_all(bind=engine)
+
+# Call the function to prepare the db
+prepare_database()
 
 # Dependency to get database session
 def get_db():
@@ -28,7 +34,7 @@ async def get_warrior_by_id(id: int, db: Session = Depends(get_db)):
     warrior = db.query(Warrior).filter(Warrior.id == id).first()
     if warrior is None:
         raise HTTPException(status_code=404, detail="Warrior not found")
-    warrior.dob = warrior.dob.strftime('%Y-%d-%m') # Format date to Y-D-M
+    warrior.dob = warrior.dob.strftime('%Y-%m-%d') # Format date to Y-D-M
     # return warrior
     return WarriorBase.from_orm(warrior)
 
@@ -47,7 +53,7 @@ def search_warriors(
     if not warriors:
         raise HTTPException(status_code=404, detail="No warriors found")
     for warrior in warriors:
-        warrior.dob = warrior.dob.strftime('%Y-%d-%m') # Format date
+        warrior.dob = warrior.dob.strftime('%Y-%m-%d') # Format date
     return warriors
    
 
@@ -64,27 +70,15 @@ def parse_date_from_string(date_str):
 
 @app.post("/warrior", response_model=WarriorBase, status_code=status.HTTP_201_CREATED)
 def create_warrior(response: Response, warrior: WarriorCreate, db: Session = Depends(get_db)):
-    # Format date before saving to DB
-    # print("In main Post80")
-    # Print received data
-    # print("warrior: ", warrior)
-    # print("Received data:", warrior.dict())
-
-    # Check type of 'warrior'
-    # print("Type of 'warrior':", type(warrior))
-
-    # Check individual fields of 'warrior'
-    # print("Name:", warrior.name)
-    # print("DOB:", warrior.dob)
-    # print("Fight skills:", warrior.fight_skills)
-    # print("MainPost90")  
-    db_warrior = Warrior(**warrior.dict())
-    # print("MainPost96")  
-    db.add(db_warrior)
-    db.commit()
-    db.refresh(db_warrior)
-    # print("MainPost100")  
-    return db_warrior
+    try:
+        db_warrior = Warrior(**warrior.dict())
+        db.add(db_warrior)
+        db.commit()
+        db.refresh(db_warrior)
+        response.headers["Location"] = f"/warrior/{db_warrior.id}"
+        return db_warrior
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 # Use port 8080
 if __name__ == "__main__":
