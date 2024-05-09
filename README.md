@@ -24,9 +24,15 @@ Added drop table if exists; corrected get date format: 85%KO
 
 Added validator for skill type and name must be chars and spaces
 
+Added validation preventing duplicate skill objects from saving; 67% KO
+
 To do:
-add middleware
-Query perf: table indexing differetnly
+adding scoped sessions middleware in SQLAlchemy so same session is not used across muliple requests
+adding indexing on name
+adding more asynch to the routes
+adding nginx
+
+
 
 
 

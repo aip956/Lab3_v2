@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from uuid import uuid4
 from pydantic import BaseModel, Field, validator, constr, root_validator, ValidationError
 from database import Base
-from typing import List
+from typing import List, Dict
 from datetime import datetime
 import re
 
@@ -52,6 +52,13 @@ class WarriorBase(BaseModel):
         for skill in skills:
             if skill not in valid_styles:
                 raise ValueError("Invalid skill")
+            
+        # Check for dups
+        skill_freq: Dict[str, int] = {}
+        for skill in skills:
+            skill_freq[skill] = skill_freq.get(skill, 0) +1
+            if skill_freq[skill] > 1:
+                raise ValueError(f"Duplicate skill found: {skill}")
         return skills
     
     @validator('name')
