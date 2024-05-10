@@ -27,11 +27,11 @@ Added validator for skill type and name must be chars and spaces
 Added validation preventing duplicate skill objects from saving; 67% KO
 
 To do:
-adding scoped sessions middleware in SQLAlchemy so same session is not used across muliple requests
+
 adding indexing on name
 adding more asynch to the routes
 adding nginx
-
+adding scoped sessions middleware in SQLAlchemy so same session is not used across muliple requests; already done
 
 
 
