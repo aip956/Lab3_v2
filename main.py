@@ -38,13 +38,13 @@ def get_db():
 # Endpoint to get warrior by ID
 @app.get("/warrior/{id}", response_model=WarriorBase, status_code=201)
 async def get_warrior_by_id(id: str, db: Session = Depends(get_db)):
-    logger.info("id: ", id)
+    # logger.info("id: ", id)
     warrior = db.query(Warrior).get(id)
     if warrior is None:
         raise HTTPException(status_code=404, detail="Warrior not found")
     warrior.dob = warrior.dob.strftime('%Y-%m-%d') # Format date to Y-D-M
-    # return warrior
-    return WarriorBase.from_orm(warrior)
+    return warrior
+    # return WarriorBase.from_orm(warrior)
 
 
 # Endpoint to search warriors by attributes
@@ -54,7 +54,7 @@ def search_warriors(
     t: Optional[str] = Query(None, description="Search term")
 ):
     # query = db.query(Warrior)
-    logger.info("search: ", t)
+    # logger.info("search: ", t)
     if t:
         warriors = db.query(Warrior).filter(func.lower(Warrior.name).contains(func.lower(t))).all()
     else:

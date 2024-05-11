@@ -27,7 +27,8 @@ Added validator for skill type and name must be chars and spaces
 Added validation preventing duplicate skill objects from saving; 67% KO
 
 Improve speed of operation
-Postman; currently ~20ms; want to get to
+Postman; currently ~20m;
+changed return on get by id, modified uuid
 
 To do:
 
