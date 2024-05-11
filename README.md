@@ -26,11 +26,15 @@ Added validator for skill type and name must be chars and spaces
 
 Added validation preventing duplicate skill objects from saving; 67% KO
 
+Improve speed of operation
+Postman; currently ~20ms; want to get to
+
 To do:
 
 adding indexing on name
 adding more asynch to the routes
 adding nginx
+
 adding scoped sessions middleware in SQLAlchemy so same session is not used across muliple requests; already done
 
 

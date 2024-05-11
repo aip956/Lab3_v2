@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from uuid import uuid4
 from pydantic import BaseModel, Field, validator, constr, root_validator, ValidationError
 from database import Base
-from typing import List, Dict
+from typing import List, Dict, Optional
 from datetime import datetime
 import re
 
@@ -15,14 +15,15 @@ import re
 class Warrior(Base):
     __tablename__ = "warriors"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
+    # id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
+    id = Column(String, primary_key=True, index=True)
     name = Column(String, index=True)
     dob = Column(Date)
     fight_skills = Column(ARRAY(String))
 
 # Pydantic model representing the basic structure of a warrior
 class WarriorBase(BaseModel):
-    # id: Optional[UUID] = None #If id might not be known at time of object creation
+    id: Optional[str] #If id might not be known at time of object creation
     name: str
     dob: datetime
     fight_skills: List[str] 

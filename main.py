@@ -7,13 +7,20 @@ from models import Base, Warrior, WarriorBase, WarriorCreate
 from typing import List
 from datetime import datetime
 from datetime import date as datetime_date
+import logging
+from uuid import uuid4
+
+
 
 
 app = FastAPI()
+logger = logging.getLogger("uvicorn")
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 def prepare_database():
     #drop table if exists
-    Warrior.__table__.drop(engine, checkfirst=True)
+    # Warrior.__table__.drop(engine, checkfirst=True)
     # Create database tables
     Base.metadata.create_all(bind=engine)
 
@@ -30,8 +37,9 @@ def get_db():
 
 # Endpoint to get warrior by ID
 @app.get("/warrior/{id}", response_model=WarriorBase, status_code=201)
-async def get_warrior_by_id(id: int, db: Session = Depends(get_db)):
-    warrior = db.query(Warrior).filter(Warrior.id == id).first()
+async def get_warrior_by_id(id: str, db: Session = Depends(get_db)):
+    logger.info("id: ", id)
+    warrior = db.query(Warrior).get(id)
     if warrior is None:
         raise HTTPException(status_code=404, detail="Warrior not found")
     warrior.dob = warrior.dob.strftime('%Y-%m-%d') # Format date to Y-D-M
@@ -46,6 +54,7 @@ def search_warriors(
     t: Optional[str] = Query(None, description="Search term")
 ):
     # query = db.query(Warrior)
+    logger.info("search: ", t)
     if t:
         warriors = db.query(Warrior).filter(func.lower(Warrior.name).contains(func.lower(t))).all()
     else:
@@ -72,6 +81,7 @@ def parse_date_from_string(date_str):
 def create_warrior(response: Response, warrior: WarriorCreate, db: Session = Depends(get_db)):
     try:
         db_warrior = Warrior(**warrior.dict())
+        db_warrior.id = str(uuid4())
         db.add(db_warrior)
         db.commit()
         db.refresh(db_warrior)
