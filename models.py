@@ -23,7 +23,7 @@ class Warrior(Base):
 
 # Pydantic model representing the basic structure of a warrior
 class WarriorBase(BaseModel):
-    id: Optional[str] #If id might not be known at time of object creation
+    id: str #If id might not be known at time of object creation
     name: str
     dob: datetime
     fight_skills: List[str] 
@@ -33,6 +33,23 @@ class WarriorBase(BaseModel):
     class Config:
         from_attributes = True
 
+    
+    
+# Pydantic model representing the data needed to create a warrior
+class WarriorCreate(BaseModel): #Changed from BaseModel to WarriorBase
+    name: str
+    dob: datetime
+    fight_skills: List[str] 
+
+    @validator('dob', pre=True)
+    def parse_dob(cls, value: str):
+        try:
+            # Ensure data is in the right format
+            # print("136dob: ", datetime.strptime(value, "%Y-%m-%d").date() )
+            return datetime.strptime(value, "%Y-%m-%d").date()
+        except ValueError as e:
+            raise ValueError("53Models, DOB must be in format YYYY-MM-DD") from e
+    
     @validator('fight_skills')
     def check_length_skills(cls, skills):
         # Check <= 20 skills
@@ -70,17 +87,5 @@ class WarriorBase(BaseModel):
             raise ValueError("Name must contain only alphanumeric chars and spaces")
         return value
     
-    
-# Pydantic model representing the data needed to create a warrior
-class WarriorCreate(WarriorBase): #Changed from BaseModel to WarriorBase
 
-    @validator('dob', pre=True)
-    def parse_dob(cls, value: str):
-        try:
-            # Ensure data is in the right format
-            # print("136dob: ", datetime.strptime(value, "%Y-%m-%d").date() )
-            return datetime.strptime(value, "%Y-%m-%d").date()
-        except ValueError as e:
-            raise ValueError("53Models, DOB must be in format YYYY-MM-DD") from e
-    pass
 

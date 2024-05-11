@@ -31,9 +31,7 @@ Postman; currently ~20m;
 changed return on get by id, modified uuid
 
 To do:
-
-adding indexing on name
-adding more asynch to the routes
+add caching?
 adding nginx
 
 adding scoped sessions middleware in SQLAlchemy so same session is not used across muliple requests; already done

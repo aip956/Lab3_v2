@@ -36,7 +36,7 @@ def get_db():
         db.close()
 
 # Endpoint to get warrior by ID
-@app.get("/warrior/{id}", response_model=WarriorBase, status_code=201)
+@app.get("/warrior/{id}", response_model=WarriorBase, status_code=200)
 async def get_warrior_by_id(id: str, db: Session = Depends(get_db)):
     # logger.info("id: ", id)
     warrior = db.query(Warrior).get(id)
@@ -48,7 +48,7 @@ async def get_warrior_by_id(id: str, db: Session = Depends(get_db)):
 
 
 # Endpoint to search warriors by attributes
-@app.get("/warrior", response_model=List[WarriorBase], status_code=201)
+@app.get("/warrior", response_model=List[WarriorBase], status_code=200)
 def search_warriors(
     db: Session = Depends(get_db),
     t: Optional[str] = Query(None, description="Search term")
@@ -58,16 +58,18 @@ def search_warriors(
     if t:
         warriors = db.query(Warrior).filter(func.lower(Warrior.name).contains(func.lower(t))).all()
     else:
-        warriors = db.query(Warrior).all()
-    if not warriors:
-        raise HTTPException(status_code=404, detail="No warriors found")
+        # warriors = db.query(Warrior).all()
+    # if not warriors:
+        raise HTTPException(status_code=400, detail="Search term is required")
+        
+    
     for warrior in warriors:
         warrior.dob = warrior.dob.strftime('%Y-%m-%d') # Format date
     return warriors
    
 
 # Endpoint to count registered warriors
-@app.get("/counting-warriors", status_code=201)
+@app.get("/counting-warriors", status_code=200)
 def count_warriors(db: Session = Depends(get_db)):
     count = db.query(Warrior).count()
     return {"Count: ": count}
