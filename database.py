@@ -7,7 +7,7 @@ SQLALCHEMY_DATABASE_URL = "postgresql://postgres:local@db:5432/EngLab3"
 
 # engine = create_engine(SQLALCHEMY_DATABASE_URL) #Original
 # engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_size=2, max_overflow=5, pool_timeout=10, pool_recycle=1800)
-engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_size=1000, max_overflow=1000, pool_timeout=10, pool_recycle=1800)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_size=2000, max_overflow=2000, pool_timeout=10, pool_recycle=1800)
 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

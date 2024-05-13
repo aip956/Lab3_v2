@@ -30,6 +30,12 @@ Improve speed of operation
 Postman; currently ~20m;
 changed return on get by id, modified uuid
 
+Fixed HTTP status code from 201 to 200, fixed search for id; 20% KO
+Increased pool to 2000; 8%
+
+Postgres improvements (docker-compose): 2% KO
+
+
 To do:
 add caching?
 adding nginx
