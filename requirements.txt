@@ -13,3 +13,4 @@ starlette==0.37.2
 typing_extensions==4.10.0
 uvicorn==0.29.0
 gunicorn
+redis==4.3.4
