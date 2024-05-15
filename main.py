@@ -39,7 +39,7 @@ def get_db():
 
 # Endpoint to get warrior by ID
 @app.get("/warrior/{id}", response_model=WarriorBase, status_code=200)
-async def get_warrior_by_id(id: str, db: Session = Depends(get_db)):
+async def get_warrior_by_id(id: str, db: Session = Depends(get_db)): #Do same with redis?
     redis_client = get_redis_client()
     warrior_data = redis_client.get(f"warrior_{id}")
     logger.info("45id: ", id)
@@ -54,6 +54,7 @@ async def get_warrior_by_id(id: str, db: Session = Depends(get_db)):
         logger.error(f"54Warrior not found for ID {id}")
         raise HTTPException(status_code=404, detail="Warrior not found")
     # warrior_data = warrior.dict()
+    # convert warrior from 52 into json directly?
     warrior_data = {
         "id": warrior.id,
         "name": warrior.name,

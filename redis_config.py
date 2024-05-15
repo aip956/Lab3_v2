@@ -2,7 +2,9 @@ import redis
 
 class RedisClient:
     _instance = None
-
+# am i creating connec pool each req
+#benchmarking for time to each command
+# hook up like getdb
     @staticmethod
     def get_instance():
         if RedisClient._instance is None:
