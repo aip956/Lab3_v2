@@ -10,9 +10,7 @@ from datetime import datetime
 from datetime import date as datetime_date
 import logging
 from uuid import uuid4
-from redis_config import get_redis_client
-
-
+from redis_config import get_redis_client, redis_dependency
 
 
 app = FastAPI()
@@ -39,8 +37,8 @@ def get_db():
 
 # Endpoint to get warrior by ID
 @app.get("/warrior/{id}", response_model=WarriorBase, status_code=200)
-async def get_warrior_by_id(id: str, db: Session = Depends(get_db)): #Do same with redis?
-    redis_client = get_redis_client()
+async def get_warrior_by_id(id: str, db: Session = Depends(get_db), redis_client = Depends(redis_dependency)): #Do same with redis?
+    # redis_client = get_redis_client()
     warrior_data = redis_client.get(f"warrior_{id}")
     logger.info("45id: ", id)
     if warrior_data:
@@ -92,8 +90,9 @@ def search_warriors(
 
 # Endpoint to count registered warriors
 @app.get("/counting-warriors", status_code=200)
-def count_warriors(db: Session = Depends(get_db)):
-    redis_client = get_redis_client()
+async def count_warriors(db: Session = Depends(get_db), redis_client = Depends(redis_dependency)):
+    # redis_client = get_redis_client()
+    # might need await below
     count = redis_client.get("warrior_count")
     logger.info(f"97Number of warriors counted: {count}")
     if count is None:

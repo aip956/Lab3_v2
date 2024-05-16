@@ -35,6 +35,9 @@ Increased pool to 2000; 8%
 
 Postgres improvements (docker-compose): 2% KO
 
+Added redis: 11%
+Redis: established a connection instead of instance: 16%
+Add async?
 
 To do:
 add caching?
