@@ -6,11 +6,20 @@ Install dependencies:
 pip install fastapi sqlalchemy psycopg2-binary
 connection port to connect postgres to alchemy
 
+Chose FastAPI
+Endpoints / instances: 
+ - Get warrior by id
+ - Get warrior by search term
+ - Count warriors
+ - Post/create warriors
+To Uvicorn web server (originally)
+PostgreSQL database
+
+
 For v2:
 Change webserver from uvicorn to gunicorn
-Validate data prior to saving
-Add limits to resources
-Increased file descriptor limits
+Added limits to resources (in docker-compose)
+Increased file descriptor limits (in docker-compose)
 Adjusted number of threads (docker-compose)
 91% KO to this point
 
@@ -31,17 +40,36 @@ Postman; currently ~20m;
 changed return on get by id, modified uuid
 
 Fixed HTTP status code from 201 to 200, fixed search for id; 20% KO
+Validate data prior to saving (had validation in the wrong class)
 Increased pool to 2000; 8%
 
-Postgres improvements (docker-compose): 2% KO
+Postgres improvements (docker-compose): 2%-4% KO
+- listen_addresses='*': Accept connections on all network interfaces
+- max_connections=1100: Set max concurrent connections
+- shared_buffers=512MB: Set the amount of memory to caching database blocks in memory
+- work_mem=64MB: Set amount of memory to be used by internal sort operations
+- maintenance_work_mem=512MB: Set the max memory for maintenance operations
+- wal_buffers=16MB: Set the amount of memory for Write-Ahead-Logging buffers
+- 
+  
 
 Added redis: 11%
 Redis: established a connection instead of instance: 16%
-Add async?
+Add async? = changed to aioredis for async/await
+20%
 
 To do:
-add caching?
+Optimize redis asynch
 adding nginx
+redundancy; 
+use key words
+
+
+
+
+
+
+
 
 adding scoped sessions middleware in SQLAlchemy so same session is not used across muliple requests; already done
 

@@ -11,6 +11,8 @@ from datetime import date as datetime_date
 import logging
 from uuid import uuid4
 from redis_config import get_redis_client, redis_dependency
+import json
+
 
 
 app = FastAPI()
@@ -39,32 +41,30 @@ def get_db():
 @app.get("/warrior/{id}", response_model=WarriorBase, status_code=200)
 async def get_warrior_by_id(id: str, db: Session = Depends(get_db), redis_client = Depends(redis_dependency)): #Do same with redis?
     # redis_client = get_redis_client()
-    warrior_data = redis_client.get(f"warrior_{id}")
+    # async with redis_client as client:
+    warrior_data = await client.get(f"warrior_{id}")
     logger.info("45id: ", id)
     if warrior_data:
         logger.info(f"47cache hit for warrior {id}")
         return json.loads(warrior_data)
     else:
         logger.info(f"cache miss line 50 id: {id}")
-    # logger.info("id: ", id)
-    warrior = db.query(Warrior).get(id)
-    if warrior is None:
-        logger.error(f"54Warrior not found for ID {id}")
-        raise HTTPException(status_code=404, detail="Warrior not found")
-    # warrior_data = warrior.dict()
-    # convert warrior from 52 into json directly?
-    warrior_data = {
-        "id": warrior.id,
-        "name": warrior.name,
-        "dob": warrior.dob.strftime('%Y-%m-%d'),
-        "fight_skills": warrior.fight_skills
-    }
-    # warrior_data['dob'] = warrior.dob.strftime('%Y-%m-%d')
-    # warrior.dob = warrior.dob.strftime('%Y-%m-%d') # Format date to Y-D-M
-    redis_client.set(f"warrior_{id}", json.dumps(warrior_data), ex=3600) # Cache for 1 hour
-    logger.info(f"66Data for warrior {id} cached for 1 hour")
-    return warrior_data
-    # return WarriorBase.from_orm(warrior)
+        # logger.info("id: ", id)
+        warrior = db.query(Warrior).get(id)
+        if warrior is None:
+            logger.error(f"54Warrior not found for ID {id}")
+            raise HTTPException(status_code=404, detail="Warrior not found")
+        # warrior_data = warrior.dict()
+        # convert warrior from 52 into json directly?
+        warrior_data = {
+            "id": warrior.id,
+            "name": warrior.name,
+            "dob": warrior.dob.strftime('%Y-%m-%d'),
+            "fight_skills": warrior.fight_skills
+        }
+        await redis_client.set(f"warrior_{id}", json.dumps(warrior_data), ex=3600) # Cache for 1 hour
+        logger.info(f"66Data for warrior {id} cached for 1 hour")
+        return warrior_data
 
 
 # Endpoint to search warriors by attributes
@@ -93,11 +93,12 @@ def search_warriors(
 async def count_warriors(db: Session = Depends(get_db), redis_client = Depends(redis_dependency)):
     # redis_client = get_redis_client()
     # might need await below
-    count = redis_client.get("warrior_count")
+    # async with redis_client as client:
+    count = await redis_client.get("warrior_count")
     logger.info(f"97Number of warriors counted: {count}")
     if count is None:
         count = db.query(Warrior).count()
-        redis_client.set("warrior_count", count, ex=3600) # Cached for 1 hour
+        await redis_client.set("warrior_count", count, ex=3600) # Cached for 1 hour
         logger.info(f"101Number of warriors counted: {count}")
     else:
         logger.info(f"103Retrieved warrior count from cache: {count}")
@@ -109,7 +110,7 @@ def parse_date_from_string(date_str):
     return datetime(year, month, day).date()
 
 @app.post("/warrior", response_model=WarriorBase, status_code=status.HTTP_201_CREATED)
-def create_warrior(response: Response, warrior: WarriorCreate, db: Session = Depends(get_db)):
+async def create_warrior(response: Response, warrior: WarriorCreate, db: Session = Depends(get_db), redis_client = Depends(redis_dependency)):
     try:
         db_warrior = Warrior(**warrior.dict())
         db_warrior.id = str(uuid4())
@@ -117,6 +118,17 @@ def create_warrior(response: Response, warrior: WarriorCreate, db: Session = Dep
         db.commit()
         db.refresh(db_warrior)
         response.headers["Location"] = f"/warrior/{db_warrior.id}"
+
+
+        # async with redis_client as client:
+            #Serialize and cache new warrior
+        warrior_data = {
+            "id": db_warrior.id,
+            "name": db_warrior.name,
+            "dob": db_warrior.dob.strftime('%Y-%m-%d'),
+            "fight_skills": db_warrior.fight_skills
+        }
+        await redis_client.set(f"warrior_{db_warrior.id}", json.dumps(warrior_data), ex=3600) # Cache for 1 hour
         return db_warrior
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
